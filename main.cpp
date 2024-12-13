@@ -23,7 +23,18 @@ struct FILEHeader {
     uint32_t file_attr;
 };
 void ReadingFunc(vector<char>rar_data) {
-    while(true) {
+    int offset = 7; // Сигнатура
+    RARHeader* prar_header = reinterpret_cast<RARHeader*>(&rar_data[offset]);
+    offset += prar_header->header_size;
+    RARHeader *prar_header_2 = reinterpret_cast<RARHeader*>(&rar_data[offset]);
+    while(int(prar_header_2->header_type) == 116) {
+        offset +=sizeof(struct RARHeader);
+        FILEHeader *pfile_header = reinterpret_cast<FILEHeader*>(&rar_data[offset]);
+        cout << hex << "Pack size: " << int(pfile_header->pack_size) << endl;
+        cout << hex << "Name size: " << int(pfile_header->name_size) << endl;
+
+
+
 
     }
 }
