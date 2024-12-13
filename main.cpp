@@ -28,14 +28,21 @@ void ReadingFunc(vector<char>rar_data) {
     offset += prar_header->header_size;
     RARHeader *prar_header_2 = reinterpret_cast<RARHeader*>(&rar_data[offset]);
     while(int(prar_header_2->header_type) == 116) {
-        offset +=sizeof(struct RARHeader);
-        FILEHeader *pfile_header = reinterpret_cast<FILEHeader*>(&rar_data[offset]);
+        //offset +=sizeof(struct RARHeader);
+        FILEHeader *pfile_header = reinterpret_cast<FILEHeader*>(&rar_data[offset+7]);
         cout << hex << "Pack size: " << int(pfile_header->pack_size) << endl;
         cout << hex << "Name size: " << int(pfile_header->name_size) << endl;
-
-
-
-
+        uint32_t name_offset = offset + sizeof(struct FILEHeader) + sizeof(struct RARHeader);
+        uint32_t name_size = pfile_header->name_size;
+        char* ConData = reinterpret_cast<char*>(&rar_data[name_offset]); //  Вычисляет адрес со смещением и приводит указатель на него к расширенной кодировке
+        string ConUtf8 = string(ConData, name_size); // Считываем имя напрямую
+        vector<wchar_t> ConUtf16(name_size); // Создаем вектор размером, как контент, и заполняем его 0
+        MultiByteToWideChar(CP_UTF8, 0, ConUtf8.c_str(),name_size,ConUtf16.data(),ConUtf16.size()); // Переводим строку с кодировкой UTF-8, в кодировку UTF-16
+        wstring Content = wstring(ConUtf16.begin(), ConUtf16.end());  // Преобразуем вектор в строку
+        wcout << "Name of the file: " << Content << endl; // Вывод
+        offset += int(prar_header_2->header_size);
+        offset += int(pfile_header->pack_size);
+        cout << endl;
     }
 }
 #pragma pack(pop)
